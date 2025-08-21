@@ -19,7 +19,7 @@ from deep_translator import GoogleTranslator
 # ===== 2) 유틸 =====
 NOW = lambda: time.strftime('%Y-%m-%d %H:%M:%S')
 
-def make_docs_from_web_query(query: str, n: int = 40) -> List[LCDocument]:
+def make_docs_from_web_query(query: str, n: int = 10) -> List[LCDocument]:
     urls = get_links(query, num=n)
     results = clean_html_parallel(urls)
     docs: List[LCDocument] = []
@@ -76,7 +76,7 @@ def run_persona_step(pcfg: Dict[str, Any], prev: List[str], system_prompt: str) 
                 snippet = snippet[:300] + "..."
             sources.append({"content": snippet, "source": d.metadata.get("source", "N/A")})
     else:
-        out_text = generate_response_from_persona(prompt)
+        out_text = generate_response_from_persona(prompt, system_prompt)
 
     return {"name": name, "output": out_text.strip(), "sources": sources}
 

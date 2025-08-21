@@ -15,13 +15,3 @@ jobs:
     bgm_path: assets/bgm.mp3     # 없으면 생략 가능
     upload: true
     out_dir: assets/auto/morning
-
-  - name: night-emotional
-    system_prompt: "당신은 감성 카피라이터입니다."
-    personas_group: emotional    # ← 이 잡은 감성 텍스트 체인
-    style: emotional             # 무성, dark text 비디오
-    include_voice: false
-    subtitle_lang: ko
-    bgm_path: assets/bgm_soft.mp3
-    upload: false
-    out_dir: assets/auto/night
