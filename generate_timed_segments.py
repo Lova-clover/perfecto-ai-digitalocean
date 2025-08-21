@@ -124,12 +124,20 @@ def generate_tts_per_line(script_lines, provider, template, polly_voice_key="kor
     for i, line in enumerate(script_lines):
         line_audio_path = os.path.join(temp_audio_dir, f"line_{i}.mp3")
         try:
-            generate_tts(
-                text=line,
-                save_path=line_audio_path,
-                provider=provider,
-                template_name=template
-            )
+            if provider == "polly":
+                generate_tts(
+                    text=line,
+                    save_path=line_audio_path,
+                    provider="polly",
+                    polly_voice_name_key=template
+                )
+            else: 
+                generate_tts(
+                    text=line,
+                    save_path=line_audio_path,
+                    provider="elevenlabs",
+                    template_name=template
+                )
             audio_paths.append(line_audio_path)
             print(f"디버그: 라인 {i+1} ('{line[:30]}...') TTS 생성 성공. 파일: {line_audio_path}")
         except Exception as e:

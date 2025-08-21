@@ -1,13 +1,11 @@
 import requests
 import os
-import streamlit as st
 import boto3 # Import the boto3 library for AWS services
 
-# Load API keys from Streamlit secrets
-ELEVEN_API_KEY = st.secrets["ELEVEN_API_KEY"]
-AWS_ACCESS_KEY_ID = st.secrets["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = st.secrets["AWS_SECRET_ACCESS_KEY"]
-AWS_REGION = st.secrets.get("AWS_REGION", "ap-northeast-2") # Default to Seoul region
+ELEVEN_API_KEY = os.getenv("ELEVEN_API_KEY", "")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-2")
 
 # Initialize Amazon Polly client
 # This client will be reused for Polly TTS requests.

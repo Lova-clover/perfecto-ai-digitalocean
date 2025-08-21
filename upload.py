@@ -3,17 +3,19 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import json
 import os
-import streamlit as st
-
 
 def upload_to_youtube(video_path, title="AI 자동 생성 영상", description="AI로 생성된 숏폼입니다."):
     SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 
-    # ✅ secrets.toml에서 문자열로 받아오기
-    token_json_str = st.secrets["YT_TOKEN_JSON"]
-
-    # ✅ 문자열을 파싱해서 dict로 변환
-    token_data = json.loads(token_json_str)
+    token_json = os.getenv("YT_TOKEN_JSON", "")
+    token_file = os.getenv("YT_TOKEN_FILE", "")
+    if token_file and os.path.exists(token_file):
+        with open(token_file, "r") as f:
+            token_data = json.load(f)
+    elif token_json:
+        token_data = json.loads(token_json)
+    else:
+        raise RuntimeError("Missing YouTube creds: set YT_TOKEN_JSON or YT_TOKEN_FILE")
 
     # ✅ token dict로 자격 증명 생성
     credentials = Credentials.from_authorized_user_info(token_data, SCOPES)

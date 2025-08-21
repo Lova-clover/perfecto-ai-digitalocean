@@ -1,10 +1,10 @@
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq  # Groq LLM 사용 시
-import streamlit as st
+import os
 
 def generate_response_from_persona(prompt_text: str) -> str:
-    llm = ChatGroq(api_key=st.secrets["GROQ_API_KEY"], model_name="llama3-8b-8192")
+    llm = ChatGroq(api_key=os.getenv("GROQ_API_KEY", ""), model_name="llama3-8b-8192")
     output_parser = StrOutputParser()
 
     prompt = ChatPromptTemplate.from_messages([

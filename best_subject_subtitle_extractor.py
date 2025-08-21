@@ -4,13 +4,12 @@ import whisper
 import subprocess   
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import streamlit as st
 from deep_translator import GoogleTranslator
 from googleapiclient.discovery import build
 from yt_dlp import YoutubeDL
 
 # ========== 설정 ==========
-API_KEY = st.secrets["API_KEY"] #유튜브 데이터 받아오기 api키
+API_KEY = os.getenv("API_KEY") #유튜브 데이터 받아오기 api키
 MAX_RESULTS = 70
 AUDIO_DIR = os.path.join("output", "youtube_subtitle", "audio")
 TXT_DIR = os.path.join("output", "youtube_subtitle", "texts")    

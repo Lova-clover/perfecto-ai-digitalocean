@@ -1,40 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-DigitalOcean Ubuntu용 Headless Runner
-- Streamlit 없이 동작, 단 일부 모듈이 st.secrets를 기대하면 shim으로 호환
-- 페르소나를 personas.yaml에서 불러와 단계별로 스크립트 생성 → 영상 생성 → (옵션) 업로드
-
-실행 예시:
-  python runner.py -c job_config.yaml
-또는 그룹 지정:
-  python runner.py -c job_config.yaml --personas-group default
-"""
 from __future__ import annotations
 import os, sys, time, argparse, json, yaml, re
 from typing import List, Dict, Any, Optional
-
-# ===== 0) Streamlit secrets shim (모듈 호환용) =====
-try:
-    import streamlit as st
-    class _Secrets(dict):
-        __getattr__ = dict.get
-        def __getitem__(self, k):
-            if k not in self:
-                raise KeyError(f"Missing secret: {k}")
-            return super().__getitem__(k)
-    env = os.environ
-    keys = [
-        "OPENAI_API_KEY","GROQ_API_KEY","COHERE_API_KEY","GOOGLE_API_KEY","API_KEY",
-        "ELEVEN_API_KEY","AWS_ACCESS_KEY_ID","AWS_SECRET_ACCESS_KEY","AWS_REGION",
-        "YT_TOKEN_JSON","REDIS_URL","REDIS_HOST","REDIS_PORT","REDIS_PASSWORD"
-    ]
-    secrets_dict = {k: env[k] for k in keys if env.get(k)}
-    if "API_KEY" not in secrets_dict and secrets_dict.get("GOOGLE_API_KEY"):
-        secrets_dict["API_KEY"] = secrets_dict["GOOGLE_API_KEY"]
-    st.secrets = _Secrets(secrets_dict)
-except Exception as e:
-    print("[WARN] secrets shim skipped:", e)
 
 # ===== 1) 프로젝트 모듈 import =====
 from langchain_core.documents import Document as LCDocument
@@ -113,12 +81,12 @@ def run_persona_step(pcfg: Dict[str, Any], prev: List[str], system_prompt: str) 
     return {"name": name, "output": out_text.strip(), "sources": sources}
 
 # ===== 5) 제목/키워드 추출 =====
-TITLE_SYS = "당신은 숏폼 비디오 한국어 제목 생성 전문가입니다. 항상 5단어 이내로 만드세요."
+TITLE_SYS = "당신은 숏폼 비디오 한국어 제목 생성 전문가입니다. 항상 8단어 이내로 만드세요."
 TOPIC_SYS = "당신은 텍스트에서 핵심 키워드만 간결히 추출합니다."
 
 def extract_title_and_topic(script_text: str) -> tuple[str, str]:
     tchain = get_default_chain(TITLE_SYS)
-    title = (tchain.invoke({"question": f"다음 스크립트에서 5단어 이내 제목만: \n\n{script_text}\n\n제목:"}) or "").strip()
+    title = (tchain.invoke({"question": f"다음 스크립트에서 8단어 이내 제목만: \n\n{script_text}\n\n제목:"}) or "").strip()
     kchain = get_default_chain(TOPIC_SYS)
     topic = (kchain.invoke({"question": f"이미지 생성을 위한 2~3 키워드 또는 10단어 이하 구문: \n\n{script_text}\n\n키워드:"}) or "").strip()
     return title, topic

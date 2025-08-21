@@ -3,7 +3,6 @@ import re
 import whisper
 import subprocess
 import unicodedata
-import streamlit as st
 from deep_translator import GoogleTranslator
 from googleapiclient.discovery import build
 from yt_dlp import YoutubeDL
@@ -16,10 +15,10 @@ from langchain_community.vectorstores import FAISS
 # 🔑 [API KEY 설정 구역]
 # ===============================
 # 1. 유튜브 API키 (Youtube Data API v3 활성화 필요) # 유튜브 데이터 받아오기 api키
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 
 # 2. 오픈AI API키 (https://platform.openai.com/api-keys) #임베딩 및 랭체인 구현
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 # ===============================
 # 🗂️ [디렉토리/환경 설정]
