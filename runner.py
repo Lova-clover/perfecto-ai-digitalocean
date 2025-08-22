@@ -81,7 +81,15 @@ def run_persona_step(pcfg: Dict[str, Any], prev: List[str], system_prompt: str) 
     return {"name": name, "output": out_text.strip(), "sources": sources}
 
 # ===== 5) 제목/키워드 추출 =====
-TITLE_SYS = "당신은 숏폼 비디오 한국어 제목 생성 전문가입니다. 항상 8단어 이내로 만드세요."
+TITLE_SYS = """
+당신은 유튜브 숏폼 제목 생성기다.
+규칙:
+1) 반드시 한국어만.
+2) 한 줄만. 리스트/번호/불릿/설명 금지.
+3) 이모지/영문/해시태그/특수기호 남발 금지.
+4) 10자 이내.
+정답(제목)만 출력하라.
+""".strip()
 TOPIC_SYS = "당신은 텍스트에서 핵심 키워드만 간결히 추출합니다."
 
 def extract_title_and_topic(script_text: str) -> tuple[str, str]:
