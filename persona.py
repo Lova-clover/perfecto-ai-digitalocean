@@ -2,6 +2,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq  # Groq LLM 사용 시
 import os
+from dotenv import load_dotenv              
+load_dotenv("/srv/secure/perfecto-ai.env") 
 
 def generate_response_from_persona(prompt_text: str) -> str:
     llm = ChatGroq(api_key=os.getenv("GROQ_API_KEY", ""), model_name="llama3-8b-8192")

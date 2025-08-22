@@ -111,8 +111,71 @@ def _maybe_translate_lines(lines, target='ko', only_if_src_is_english=True):
         # 번역 실패 시 원문 유지 (크래시 방지)
         return lines
 
-def split_script_to_lines(script_text):
-    return [sent.strip() for sent in kss.split_sentences(script_text) if sent.strip()]
+def _preclean_script(text: str) -> str:
+    if not text:
+        return ""
+    t = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    # 1) 흔한 머리말 제거
+    t = re.sub(r'^\s*(here is the revised script:|revised script:)\s*\n+', '', t, flags=re.I)
+
+    # 2) 코드펜스/따옴표 라인 제거
+    t = re.sub(r'^\s*```+\s*$', '', t, flags=re.M)
+    t = re.sub(r'^\s*"{3}\s*$|^\s*\'{3}\s*$', '', t, flags=re.M)
+
+    # 3) 전체를 감싼 따옴표 벗기기
+    ts = t.strip()
+    if ts.startswith('"""') and ts.endswith('"""') and len(ts) >= 6:
+        t = ts[3:-3]
+    elif ts.startswith('"') and ts.endswith('"') and len(ts) >= 2:
+        t = ts[1:-1]
+    elif ts.startswith("'") and ts.endswith("'") and len(ts) >= 2:
+        t = ts[1:-1]
+
+    # 4) 군더더기 따옴표/공백 정리, 과도한 빈 줄 축소
+    t = re.sub(r'^[\'"“”]+|[\'"“”]+$', '', t.strip())
+    t = re.sub(r'\n{3,}', '\n\n', t)
+    return t.strip()
+
+def split_script_to_lines(script_text: str):
+    t = _preclean_script(script_text)
+    if not t:
+        return []
+
+    # 언어 휴리스틱
+    letters = len(re.findall(r'[A-Za-z]', t))
+    hangul  = len(re.findall(r'[\uac00-\ud7a3]', t))
+
+    if hangul >= letters:
+        # 한국어 위주 → KSS
+        lines = [s.strip() for s in kss.split_sentences(t) if s.strip()]
+    else:
+        # 영어/혼합 → 줄바꿈/불릿/문장부호 기반
+        lines = []
+        # 문단 단위
+        for block in re.split(r'(?:\n\s*){2,}', t):
+            if not block.strip():
+                continue
+            # 줄 단위
+            for raw in block.split('\n'):
+                s = raw.strip()
+                if not s:
+                    continue
+                # 불릿/번호 제거
+                s = re.sub(r'^\s*(?:[-•*]|\d+[.)])\s+', '', s)
+                # 문장부호 기준 1차 분리
+                parts = re.split(r'(?<=[.!?])\s+(?=[A-Z"\'(])', s)
+                for p in parts:
+                    p = p.strip(' "\'')
+                    if p:
+                        lines.append(p)
+
+    # 최후 폴백: 아직도 1줄이고 길면 더 잘게
+    if len(lines) <= 1 and len(t) > 80:
+        rough = re.split(r'(?<=[.!?])\s+|(?<=[。！？])\s+|\n+', t)
+        lines = [x.strip(' "\'') for x in rough if x.strip()]
+
+    return lines
 
 def generate_tts_per_line(script_lines, provider, template, polly_voice_key="korean_female1"):
     audio_paths = []
